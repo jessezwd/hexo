@@ -1,18 +1,17 @@
 'use strict';
 
-var cheerio = require('cheerio');
-var should = require('chai').should(); // eslint-disable-line
+const cheerio = require('cheerio');
 
-describe('gist', function() {
-  var gist = require('../../../lib/plugins/tag/gist');
+describe('gist', () => {
+  const gist = require('../../../lib/plugins/tag/gist');
 
-  it('id', function() {
-    var $ = cheerio.load(gist(['foo']));
+  it('id', () => {
+    const $ = cheerio.load(gist(['foo']));
     $('script').attr('src').should.eql('//gist.github.com/foo.js');
   });
 
-  it('file', function() {
-    var $ = cheerio.load(gist(['foo', 'bar']));
+  it('file', () => {
+    const $ = cheerio.load(gist(['foo', 'bar']));
     $('script').attr('src').should.eql('//gist.github.com/foo.js?file=bar');
   });
 });

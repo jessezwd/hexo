@@ -1,16 +1,15 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var pathFn = require('path');
-var fs = require('hexo-fs');
-var Promise = require('bluebird');
-var moment = require('moment');
-var sinon = require('sinon');
+const pathFn = require('path');
+const fs = require('hexo-fs');
+const Promise = require('bluebird');
+const moment = require('moment');
+const sinon = require('sinon');
 
-describe('View', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(pathFn.join(__dirname, 'theme_test'));
-  var themeDir = pathFn.join(hexo.base_dir, 'themes', 'test');
+describe('View', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(pathFn.join(__dirname, 'theme_test'));
+  const themeDir = pathFn.join(hexo.base_dir, 'themes', 'test');
 
   hexo.env.init = true;
 
@@ -18,45 +17,39 @@ describe('View', function() {
     return new hexo.theme.View(path, data);
   }
 
-  before(function() {
-    return Promise.all([
-      fs.mkdirs(themeDir),
-      fs.writeFile(hexo.config_path, 'theme: test')
-    ]).then(function() {
-      return hexo.init();
-    }).then(function() {
-      // Setup layout
-      hexo.theme.setView('layout.swig', [
-        'pre',
-        '{{ body }}',
-        'post'
-      ].join('\n'));
-    });
-  });
+  before(() => Promise.all([
+    fs.mkdirs(themeDir),
+    fs.writeFile(hexo.config_path, 'theme: test')
+  ]).then(() => hexo.init()).then(() => {
+    // Setup layout
+    hexo.theme.setView('layout.swig', [
+      'pre',
+      '{{ body }}',
+      'post'
+    ].join('\n'));
+  }));
 
-  after(function() {
-    return fs.rmdir(hexo.base_dir);
-  });
+  after(() => fs.rmdir(hexo.base_dir));
 
-  it('constructor', function() {
-    var data = {
+  it('constructor', () => {
+    const data = {
       _content: ''
     };
-    var view = newView('index.swig', data);
+    const view = newView('index.swig', data);
 
     view.path.should.eql('index.swig');
     view.source.should.eql(pathFn.join(themeDir, 'layout', 'index.swig'));
     view.data.should.eql(data);
   });
 
-  it('parse front-matter', function() {
-    var body = [
+  it('parse front-matter', () => {
+    const body = [
       'layout: false',
       '---',
       'content'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
     view.data.should.eql({
       layout: false,
@@ -64,9 +57,9 @@ describe('View', function() {
     });
   });
 
-  it('precompile view if possible', function() {
-    var body = 'Hello {{ name }}';
-    var view = newView('index.swig', body);
+  it('precompile view if possible', () => {
+    const body = 'Hello {{ name }}';
+    const view = newView('index.swig', body);
 
     view._compiledSync({
       name: 'Hexo'
@@ -74,18 +67,18 @@ describe('View', function() {
 
     return view._compiled({
       name: 'Hexo'
-    }).then(function(result) {
+    }).then(result => {
       result.should.eql('Hello Hexo');
     });
   });
 
-  it('generate precompiled function even if renderer does not provide compile function', function() {
+  it('generate precompiled function even if renderer does not provide compile function', () => {
     // Remove compile function
-    var compile = hexo.extend.renderer.store.swig.compile;
+    const compile = hexo.extend.renderer.store.swig.compile;
     delete hexo.extend.renderer.store.swig.compile;
 
-    var body = 'Hello {{ name }}';
-    var view = newView('index.swig', body);
+    const body = 'Hello {{ name }}';
+    const view = newView('index.swig', body);
 
     view._compiledSync({
       name: 'Hexo'
@@ -93,123 +86,123 @@ describe('View', function() {
 
     return view._compiled({
       name: 'Hexo'
-    }).then(function(result) {
+    }).then(result => {
       result.should.eql('Hello Hexo');
-    }).finally(function() {
+    }).finally(() => {
       hexo.extend.renderer.store.swig.compile = compile;
     });
   });
 
-  it('render()', function() {
-    var body = [
+  it('render()', () => {
+    const body = [
       '{{ test }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
     return view.render({
       test: 'foo'
-    }).then(function(content) {
+    }).then(content => {
       content.should.eql('foo');
     });
   });
 
-  it('render() - front-matter', function() {
+  it('render() - front-matter', () => {
     // The priority of front-matter is higher
-    var body = [
+    const body = [
       'foo: bar',
       '---',
       '{{ foo }}',
       '{{ test }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
     return view.render({
       foo: 'foo',
       test: 'test'
-    }).then(function(content) {
+    }).then(content => {
       content.should.eql('bar\ntest');
     });
   });
 
-  it('render() - helper', function() {
-    var body = [
+  it('render() - helper', () => {
+    const body = [
       '{{ date() }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
     return view.render({
       config: hexo.config,
       page: {}
-    }).then(function(content) {
+    }).then(content => {
       content.should.eql(moment().format(hexo.config.date_format));
     });
   });
 
-  it('render() - layout', function() {
-    var body = 'content';
-    var view = newView('index.swig', body);
+  it('render() - layout', () => {
+    const body = 'content';
+    const view = newView('index.swig', body);
 
     return view.render({
       layout: 'layout'
-    }).then(function(content) {
+    }).then(content => {
       content.should.eql('pre\n' + body + '\npost');
     });
   });
 
-  it('render() - layout not found', function() {
-    var body = 'content';
-    var view = newView('index.swig', body);
+  it('render() - layout not found', () => {
+    const body = 'content';
+    const view = newView('index.swig', body);
 
     return view.render({
       layout: 'wtf'
-    }).then(function(content) {
+    }).then(content => {
       content.should.eql(body);
     });
   });
 
-  it('render() - callback', function(callback) {
-    var body = [
+  it('render() - callback', callback => {
+    const body = [
       '{{ test }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
     view.render({
       test: 'foo'
-    }, function(err, content) {
+    }, (err, content) => {
       should.not.exist(err);
       content.should.eql('foo');
       callback();
     });
   });
 
-  it('render() - callback (without options)', function(callback) {
-    var body = [
+  it('render() - callback (without options)', callback => {
+    const body = [
       'test: foo',
       '---',
       '{{ test }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
-    view.render(function(err, content) {
+    view.render((err, content) => {
       should.not.exist(err);
       content.should.eql('foo');
       callback();
     });
   });
 
-  it('render() - execute after_render:html', function() {
-    var body = [
+  it('render() - execute after_render:html', () => {
+    const body = [
       '{{ test }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
-    var filter = sinon.spy(function(result) {
+    const filter = sinon.spy(result => {
       result.should.eql('foo');
       return 'bar';
     });
@@ -218,32 +211,32 @@ describe('View', function() {
 
     return view.render({
       test: 'foo'
-    }).then(function(content) {
+    }).then(content => {
       content.should.eql('bar');
-    }).finally(function() {
+    }).finally(() => {
       hexo.extend.filter.unregister('after_render:html', filter);
     });
   });
 
-  it('renderSync()', function() {
-    var body = [
+  it('renderSync()', () => {
+    const body = [
       '{{ test }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
     view.renderSync({test: 'foo'}).should.eql('foo');
   });
 
-  it('renderSync() - front-matter', function() {
+  it('renderSync() - front-matter', () => {
     // The priority of front-matter is higher
-    var body = [
+    const body = [
       'foo: bar',
       '---',
       '{{ foo }}',
       '{{ test }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
     view.renderSync({
       foo: 'foo',
@@ -251,12 +244,12 @@ describe('View', function() {
     }).should.eql('bar\ntest');
   });
 
-  it('renderSync() - helper', function() {
-    var body = [
+  it('renderSync() - helper', () => {
+    const body = [
       '{{ date() }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
     view.renderSync({
       config: hexo.config,
@@ -264,32 +257,32 @@ describe('View', function() {
     }).should.eql(moment().format(hexo.config.date_format));
   });
 
-  it('renderSync() - layout', function() {
-    var body = 'content';
-    var view = newView('index.swig', body);
+  it('renderSync() - layout', () => {
+    const body = 'content';
+    const view = newView('index.swig', body);
 
     view.renderSync({
       layout: 'layout'
     }).should.eql('pre\n' + body + '\npost');
   });
 
-  it('renderSync() - layout not found', function() {
-    var body = 'content';
-    var view = newView('index.swig', body);
+  it('renderSync() - layout not found', () => {
+    const body = 'content';
+    const view = newView('index.swig', body);
 
     view.renderSync({
       layout: 'wtf'
     }).should.eql(body);
   });
 
-  it('renderSync() - execute after_render:html', function() {
-    var body = [
+  it('renderSync() - execute after_render:html', () => {
+    const body = [
       '{{ test }}'
     ].join('\n');
 
-    var view = newView('index.swig', body);
+    const view = newView('index.swig', body);
 
-    var filter = sinon.spy(function(result) {
+    const filter = sinon.spy(result => {
       result.should.eql('foo');
       return 'bar';
     });
@@ -299,8 +292,8 @@ describe('View', function() {
     hexo.extend.filter.unregister('after_render:html', filter);
   });
 
-  it('_resolveLayout()', function() {
-    var view = newView('partials/header.swig', 'header');
+  it('_resolveLayout()', () => {
+    const view = newView('partials/header.swig', 'header');
 
     // Relative path
     view._resolveLayout('../layout').should.have.property('path', 'layout.swig');

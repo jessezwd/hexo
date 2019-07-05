@@ -1,24 +1,20 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
+describe('render', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(__dirname);
+  const render = require('../../../lib/plugins/helper/render')(hexo);
 
-describe('render', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(__dirname);
-  var render = require('../../../lib/plugins/helper/render')(hexo);
+  before(() => hexo.init());
 
-  before(function() {
-    return hexo.init();
-  });
-
-  it('default', function() {
-    var body = [
+  it('default', () => {
+    const body = [
       'foo: 1',
       'bar:',
       '\tbaz: 3'
     ].join('\n');
 
-    var result = render(body, 'yaml');
+    const result = render(body, 'yaml');
 
     result.should.eql({
       foo: 1,

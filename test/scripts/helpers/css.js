@@ -1,49 +1,47 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
+describe('css', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(__dirname);
 
-describe('css', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(__dirname);
-
-  var ctx = {
+  const ctx = {
     config: hexo.config
   };
 
   ctx.url_for = require('../../../lib/plugins/helper/url_for').bind(ctx);
 
-  var css = require('../../../lib/plugins/helper/css').bind(ctx);
+  const css = require('../../../lib/plugins/helper/css').bind(ctx);
 
   function assertResult(result) {
-    var expected = '';
+    let expected = '';
 
-    for (var i = 1, len = arguments.length; i < len; i++) {
+    for (let i = 1, len = arguments.length; i < len; i++) {
       expected += '<link rel="stylesheet" href="' + arguments[i] + '">\n';
     }
 
     result.should.eql(expected.trim());
   }
 
-  it('a string', function() {
+  it('a string', () => {
     assertResult(css('style'), '/style.css');
     assertResult(css('style.css'), '/style.css');
-    assertResult(css('http://hexo.io/style.css'), 'http://hexo.io/style.css');
+    assertResult(css('https://hexo.io/style.css'), 'https://hexo.io/style.css');
     assertResult(css('//hexo.io/style.css'), '//hexo.io/style.css');
   });
 
-  it('an array', function() {
+  it('an array', () => {
     assertResult(css(['foo', 'bar', 'baz']), '/foo.css', '/bar.css', '/baz.css');
   });
 
-  it('multiple strings', function() {
+  it('multiple strings', () => {
     assertResult(css('foo', 'bar', 'baz'), '/foo.css', '/bar.css', '/baz.css');
   });
 
-  it('multiple arrays', function() {
+  it('multiple arrays', () => {
     assertResult(css(['foo', 'bar'], ['baz']), '/foo.css', '/bar.css', '/baz.css');
   });
 
-  it('mixed', function() {
+  it('mixed', () => {
     assertResult(css(['foo', 'bar'], 'baz'), '/foo.css', '/bar.css', '/baz.css');
   });
 });

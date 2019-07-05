@@ -1,49 +1,47 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
+describe('link_to', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(__dirname);
 
-describe('link_to', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(__dirname);
-
-  var ctx = {
+  const ctx = {
     config: hexo.config
   };
 
   ctx.url_for = require('../../../lib/plugins/helper/url_for').bind(ctx);
 
-  var linkTo = require('../../../lib/plugins/helper/link_to').bind(ctx);
+  const linkTo = require('../../../lib/plugins/helper/link_to').bind(ctx);
 
-  it('path', function() {
-    linkTo('http://hexo.io/').should.eql('<a href="http://hexo.io/" title="hexo.io">hexo.io</a>');
+  it('path', () => {
+    linkTo('https://hexo.io/').should.eql('<a href="https://hexo.io/" title="hexo.io">hexo.io</a>');
   });
 
-  it('title', function() {
-    linkTo('http://hexo.io/', 'Hexo').should.eql('<a href="http://hexo.io/" title="Hexo">Hexo</a>');
+  it('title', () => {
+    linkTo('https://hexo.io/', 'Hexo').should.eql('<a href="https://hexo.io/" title="Hexo">Hexo</a>');
   });
 
-  it('external (boolean)', function() {
-    linkTo('http://hexo.io/', 'Hexo', true)
-      .should.eql('<a href="http://hexo.io/" title="Hexo" target="_blank" rel="external">Hexo</a>');
+  it('external (boolean)', () => {
+    linkTo('https://hexo.io/', 'Hexo', true)
+      .should.eql('<a href="https://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a>');
   });
 
-  it('external (object)', function() {
-    linkTo('http://hexo.io/', 'Hexo', {external: true})
-      .should.eql('<a href="http://hexo.io/" title="Hexo" target="_blank" rel="external">Hexo</a>');
+  it('external (object)', () => {
+    linkTo('https://hexo.io/', 'Hexo', {external: true})
+      .should.eql('<a href="https://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a>');
   });
 
-  it('class (string)', function() {
-    linkTo('http://hexo.io/', 'Hexo', {class: 'foo'})
-      .should.eql('<a href="http://hexo.io/" title="Hexo" class="foo">Hexo</a>');
+  it('class (string)', () => {
+    linkTo('https://hexo.io/', 'Hexo', {class: 'foo'})
+      .should.eql('<a href="https://hexo.io/" title="Hexo" class="foo">Hexo</a>');
   });
 
-  it('class (array)', function() {
-    linkTo('http://hexo.io/', 'Hexo', {class: ['foo', 'bar']})
-      .should.eql('<a href="http://hexo.io/" title="Hexo" class="foo bar">Hexo</a>');
+  it('class (array)', () => {
+    linkTo('https://hexo.io/', 'Hexo', {class: ['foo', 'bar']})
+      .should.eql('<a href="https://hexo.io/" title="Hexo" class="foo bar">Hexo</a>');
   });
 
-  it('id', function() {
-    linkTo('http://hexo.io/', 'Hexo', {id: 'foo'})
-      .should.eql('<a href="http://hexo.io/" title="Hexo" id="foo">Hexo</a>');
+  it('id', () => {
+    linkTo('https://hexo.io/', 'Hexo', {id: 'foo'})
+      .should.eql('<a href="https://hexo.io/" title="Hexo" id="foo">Hexo</a>');
   });
 });

@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Extend', function() {
+describe('Extend', () => {
   require('./console');
   require('./deployer');
   require('./filter');
@@ -10,4 +10,5 @@ describe('Extend', function() {
   require('./processor');
   require('./renderer');
   require('./tag');
+  require('./tag_errors');
 });

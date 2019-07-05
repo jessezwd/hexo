@@ -1,20 +1,18 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var pathFn = require('path');
-var Promise = require('bluebird');
-var fs = require('hexo-fs');
-var yaml = require('js-yaml');
-var _ = require('lodash');
+const pathFn = require('path');
+const Promise = require('bluebird');
+const fs = require('hexo-fs');
+const yaml = require('js-yaml');
 
-describe('File', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(__dirname);
-  var Box = require('../../../lib/box');
-  var box = new Box(hexo, pathFn.join(hexo.base_dir, 'file_test'));
-  var File = box.File;
+describe('File', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(__dirname);
+  const Box = require('../../../lib/box');
+  const box = new Box(hexo, pathFn.join(hexo.base_dir, 'file_test'));
+  const File = box.File;
 
-  var body = [
+  const body = [
     'name:',
     '  first: John',
     '  last: Doe',
@@ -26,63 +24,53 @@ describe('File', function() {
     '- Banana'
   ].join('\n');
 
-  var obj = yaml.load(body);
-  var path = 'test.yml';
+  const obj = yaml.load(body);
+  const path = 'test.yml';
 
   function makeFile(path, props) {
-    return new File(_.assign({
+    return new File(Object.assign({
       source: pathFn.join(box.base, path),
-      path: path
+      path
     }, props));
   }
 
-  var file = makeFile(path, {
+  const file = makeFile(path, {
     source: pathFn.join(box.base, path),
-    path: path,
+    path,
     type: 'create',
     params: {foo: 'bar'}
   });
 
-  before(function() {
-    return Promise.all([
-      fs.writeFile(file.source, body),
-      hexo.init()
-    ]).then(function() {
-      return fs.stat(file.source);
-    });
-  });
+  before(() => Promise.all([
+    fs.writeFile(file.source, body),
+    hexo.init()
+  ]).then(() => fs.stat(file.source)));
 
-  after(function() {
-    return fs.rmdir(box.base);
-  });
+  after(() => fs.rmdir(box.base));
 
-  it('read()', function() {
-    return file.read().should.eventually.eql(body);
-  });
+  it('read()', () => file.read().should.eventually.eql(body));
 
-  it('read() - callback', function(callback) {
-    file.read(function(err, content) {
+  it('read() - callback', callback => {
+    file.read((err, content) => {
       should.not.exist(err);
       content.should.eql(body);
       callback();
     });
   });
 
-  it('readSync()', function() {
+  it('readSync()', () => {
     file.readSync().should.eql(body);
   });
 
-  it('stat()', function() {
-    return Promise.all([
-      fs.stat(file.source),
-      file.stat()
-    ]).then(function(stats) {
-      stats[0].should.eql(stats[1]);
-    });
-  });
+  it('stat()', () => Promise.all([
+    fs.stat(file.source),
+    file.stat()
+  ]).then(stats => {
+    stats[0].should.eql(stats[1]);
+  }));
 
-  it('stat() - callback', function(callback) {
-    file.stat(function(err, fileStats) {
+  it('stat() - callback', callback => {
+    file.stat((err, fileStats) => {
       if (err) return callback(err);
 
       fileStats.should.eql(fs.statSync(file.source));
@@ -90,16 +78,14 @@ describe('File', function() {
     });
   });
 
-  it('statSync()', function() {
+  it('statSync()', () => {
     file.statSync().should.eql(fs.statSync(file.source));
   });
 
-  it('render()', function() {
-    return file.render().should.eventually.eql(obj);
-  });
+  it('render()', () => file.render().should.eventually.eql(obj));
 
-  it('render() - callback', function(callback) {
-    file.render(function(err, data) {
+  it('render() - callback', callback => {
+    file.render((err, data) => {
       if (err) return callback(err);
 
       data.should.eql(obj);
@@ -107,7 +93,7 @@ describe('File', function() {
     });
   });
 
-  it('renderSync()', function() {
+  it('renderSync()', () => {
     file.renderSync().should.eql(obj);
   });
 });

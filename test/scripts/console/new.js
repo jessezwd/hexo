@@ -1,50 +1,43 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var fs = require('hexo-fs');
-var moment = require('moment');
-var pathFn = require('path');
-var Promise = require('bluebird');
-var sinon = require('sinon');
+const fs = require('hexo-fs');
+const moment = require('moment');
+const pathFn = require('path');
+const Promise = require('bluebird');
+const sinon = require('sinon');
 
-describe('new', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(pathFn.join(__dirname, 'new_test'), {silent: true});
-  var n = require('../../../lib/plugins/console/new').bind(hexo);
-  var post = hexo.post;
-  var now = Date.now();
-  var clock;
+describe('new', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(pathFn.join(__dirname, 'new_test'), {silent: true});
+  const n = require('../../../lib/plugins/console/new').bind(hexo);
+  const post = hexo.post;
+  const now = Date.now();
+  let clock;
 
-  before(function() {
+  before(() => {
     clock = sinon.useFakeTimers(now);
 
-    return fs.mkdirs(hexo.base_dir).then(function() {
-      return hexo.init();
-    }).then(function() {
-      return hexo.scaffold.set('post', [
-        'title: {{ title }}',
-        'date: {{ date }}',
-        'tags:',
-        '---'
-      ].join('\n'));
-    }).then(function() {
-      return hexo.scaffold.set('draft', [
-        'title: {{ title }}',
-        'tags:',
-        '---'
-      ].join('\n'));
-    });
+    return fs.mkdirs(hexo.base_dir).then(() => hexo.init()).then(() => hexo.scaffold.set('post', [
+      'title: {{ title }}',
+      'date: {{ date }}',
+      'tags:',
+      '---'
+    ].join('\n'))).then(() => hexo.scaffold.set('draft', [
+      'title: {{ title }}',
+      'tags:',
+      '---'
+    ].join('\n')));
   });
 
-  after(function() {
+  after(() => {
     clock.restore();
     return fs.rmdir(hexo.base_dir);
   });
 
-  it('title', function() {
-    var date = moment(now);
-    var path = pathFn.join(hexo.source_dir, '_posts', 'Hello-World.md');
-    var body = [
+  it('title', () => {
+    const date = moment(now);
+    const path = pathFn.join(hexo.source_dir, '_posts', 'Hello-World.md');
+    const body = [
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -53,17 +46,15 @@ describe('new', function() {
 
     return n({
       _: ['Hello World']
-    }).then(function() {
-      return fs.readFile(path);
-    }).then(function(content) {
+    }).then(() => fs.readFile(path)).then(content => {
       content.should.eql(body);
       return fs.unlink(path);
     });
   });
 
-  it('layout', function() {
-    var path = pathFn.join(hexo.source_dir, '_drafts', 'Hello-World.md');
-    var body = [
+  it('layout', () => {
+    const path = pathFn.join(hexo.source_dir, '_drafts', 'Hello-World.md');
+    const body = [
       'title: Hello World',
       'tags:',
       '---'
@@ -71,18 +62,16 @@ describe('new', function() {
 
     return n({
       _: ['draft', 'Hello World']
-    }).then(function() {
-      return fs.readFile(path);
-    }).then(function(content) {
+    }).then(() => fs.readFile(path)).then(content => {
       content.should.eql(body);
       return fs.unlink(path);
     });
   });
 
-  it('slug', function() {
-    var date = moment(now);
-    var path = pathFn.join(hexo.source_dir, '_posts', 'foo.md');
-    var body = [
+  it('slug', () => {
+    const date = moment(now);
+    const path = pathFn.join(hexo.source_dir, '_posts', 'foo.md');
+    const body = [
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -92,18 +81,16 @@ describe('new', function() {
     return n({
       _: ['Hello World'],
       slug: 'foo'
-    }).then(function() {
-      return fs.readFile(path);
-    }).then(function(content) {
+    }).then(() => fs.readFile(path)).then(content => {
       content.should.eql(body);
       return fs.unlink(path);
     });
   });
 
-  it('path', function() {
-    var date = moment(now);
-    var path = pathFn.join(hexo.source_dir, '_posts', 'bar.md');
-    var body = [
+  it('path', () => {
+    const date = moment(now);
+    const path = pathFn.join(hexo.source_dir, '_posts', 'bar.md');
+    const body = [
       'title: Hello World',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
       'tags:',
@@ -114,26 +101,20 @@ describe('new', function() {
       _: ['Hello World'],
       slug: 'foo',
       path: 'bar'
-    }).then(function() {
-      return fs.readFile(path);
-    }).then(function(content) {
+    }).then(() => fs.readFile(path)).then(content => {
       content.should.eql(body);
       return fs.unlink(path);
     });
   });
 
-  it('rename if target existed', function() {
-    var path = pathFn.join(hexo.source_dir, '_posts', 'Hello-World-1.md');
+  it('rename if target existed', () => {
+    const path = pathFn.join(hexo.source_dir, '_posts', 'Hello-World-1.md');
 
     return post.create({
       title: 'Hello World'
-    }).then(function() {
-      return n({
-        _: ['Hello World']
-      });
-    }).then(function() {
-      return fs.exists(path);
-    }).then(function(exist) {
+    }).then(() => n({
+      _: ['Hello World']
+    })).then(() => fs.exists(path)).then(exist => {
       exist.should.be.true;
 
       return Promise.all([
@@ -143,28 +124,24 @@ describe('new', function() {
     });
   });
 
-  it('replace existing files', function() {
-    var path = pathFn.join(hexo.source_dir, '_posts', 'Hello-World.md');
+  it('replace existing files', () => {
+    const path = pathFn.join(hexo.source_dir, '_posts', 'Hello-World.md');
 
     return post.create({
       title: 'Hello World'
-    }).then(function() {
-      return n({
-        _: ['Hello World'],
-        replace: true
-      });
-    }).then(function() {
-      return fs.exists(pathFn.join(hexo.source_dir, '_posts', 'Hello-World-1.md'));
-    }).then(function(exist) {
+    }).then(() => n({
+      _: ['Hello World'],
+      replace: true
+    })).then(() => fs.exists(pathFn.join(hexo.source_dir, '_posts', 'Hello-World-1.md'))).then(exist => {
       exist.should.be.false;
       return fs.unlink(path);
     });
   });
 
-  it('extra data', function() {
-    var date = moment(now);
-    var path = pathFn.join(hexo.source_dir, '_posts', 'Hello-World.md');
-    var body = [
+  it('extra data', () => {
+    const date = moment(now);
+    const path = pathFn.join(hexo.source_dir, '_posts', 'Hello-World.md');
+    const body = [
       'title: Hello World',
       'foo: bar',
       'date: ' + date.format('YYYY-MM-DD HH:mm:ss'),
@@ -175,9 +152,7 @@ describe('new', function() {
     return n({
       _: ['Hello World'],
       foo: 'bar'
-    }).then(function() {
-      return fs.readFile(path);
-    }).then(function(content) {
+    }).then(() => fs.readFile(path)).then(content => {
       content.should.eql(body);
       return fs.unlink(path);
     });

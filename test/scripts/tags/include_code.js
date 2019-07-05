@@ -1,18 +1,17 @@
 'use strict';
 
-var pathFn = require('path');
-var should = require('chai').should(); // eslint-disable-line
-var fs = require('hexo-fs');
-var highlight = require('hexo-util').highlight;
-var Promise = require('bluebird');
+const pathFn = require('path');
+const fs = require('hexo-fs');
+const highlight = require('hexo-util').highlight;
+const Promise = require('bluebird');
 
-describe('include_code', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(pathFn.join(__dirname, 'include_code_test'));
-  var includeCode = Promise.method(require('../../../lib/plugins/tag/include_code')(hexo));
-  var path = pathFn.join(hexo.source_dir, hexo.config.code_dir, 'test.js');
+describe('include_code', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(pathFn.join(__dirname, 'include_code_test'));
+  const includeCode = Promise.method(require('../../../lib/plugins/tag/include_code')(hexo));
+  const path = pathFn.join(hexo.source_dir, hexo.config.code_dir, 'test.js');
 
-  var fixture = [
+  const fixture = [
     'if (tired && night){',
     '  sleep();',
     '}'
@@ -22,57 +21,94 @@ describe('include_code', function() {
     return includeCode(args.split(' '));
   }
 
-  before(function() {
-    return fs.writeFile(path, fixture);
-  });
+  before(() => fs.writeFile(path, fixture));
 
-  after(function() {
-    return fs.rmdir(hexo.base_dir);
-  });
+  after(() => fs.rmdir(hexo.base_dir));
 
-  it('default', function() {
-    var expected = highlight(fixture, {
+  it('default', () => {
+    const expected = highlight(fixture, {
       lang: 'js',
       caption: '<span>test.js</span><a href="/downloads/code/test.js">view raw</a>'
     });
 
-    return code('test.js').then(function(result) {
+    return code('test.js').then(result => {
       result.should.eql(expected);
     });
   });
 
-  it('title', function() {
-    var expected = highlight(fixture, {
+  it('title', () => {
+    const expected = highlight(fixture, {
       lang: 'js',
       caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
     });
 
-    return code('Hello world test.js').then(function(result) {
+    return code('Hello world test.js').then(result => {
       result.should.eql(expected);
     });
   });
 
-  it('lang', function() {
-    var expected = highlight(fixture, {
+  it('lang', () => {
+    const expected = highlight(fixture, {
       lang: 'js',
       caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
     });
 
-    return code('Hello world lang:js test.js').then(function(result) {
+    return code('Hello world lang:js test.js').then(result => {
       result.should.eql(expected);
     });
   });
 
-  it('file not found', function() {
-    return code('nothing').then(function(result) {
-      should.not.exist(result);
+  it('from', () => {
+    const fixture = [
+      '}'
+    ].join('\n');
+    const expected = highlight(fixture, {
+      lang: 'js',
+      caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
+    });
+
+    return code('Hello world lang:js from:3 test.js').then(result => {
+      result.should.eql(expected);
     });
   });
 
-  it('disabled', function() {
+  it('to', () => {
+    const fixture = [
+      'if (tired && night){',
+      '  sleep();'
+    ].join('\n');
+    const expected = highlight(fixture, {
+      lang: 'js',
+      caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
+    });
+
+    return code('Hello world lang:js to:2 test.js').then(result => {
+      result.should.eql(expected);
+    });
+  });
+
+  it('from and to', () => {
+    const fixture = [
+      'sleep();'
+    ].join('\n');
+    const expected = highlight(fixture, {
+      lang: 'js',
+      caption: '<span>Hello world</span><a href="/downloads/code/test.js">view raw</a>'
+    });
+
+    return code('Hello world lang:js from:2 to:2 test.js').then(result => {
+      result.should.eql(expected);
+    });
+  });
+
+  it('file not found', () => code('nothing').then(result => {
+    should.not.exist(result);
+  }));
+
+  it('disabled', () => {
     hexo.config.highlight.enable = false;
 
-    return code('test.js').then(function(result) {
+    return code('test.js').then(result => {
       result.should.eql('<pre><code>' + fixture + '</code></pre>');
       hexo.config.highlight.enable = true;
     });

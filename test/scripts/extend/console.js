@@ -1,12 +1,10 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
+describe('Console', () => {
+  const Console = require('../../../lib/extend/console');
 
-describe('Console', function() {
-  var Console = require('../../../lib/extend/console');
-
-  it('register()', function() {
-    var c = new Console();
+  it('register()', () => {
+    const c = new Console();
 
     // no name
     try {
@@ -18,7 +16,7 @@ describe('Console', function() {
     }
 
     // name, fn
-    c.register('test', function() {});
+    c.register('test', () => {});
 
     c.get('test').should.exist;
 
@@ -32,7 +30,7 @@ describe('Console', function() {
     }
 
     // name, desc, fn
-    c.register('test', 'this is a test', function() {});
+    c.register('test', 'this is a test', () => {});
 
     c.get('test').should.exist;
     c.get('test').desc.should.eql('this is a test');
@@ -47,7 +45,7 @@ describe('Console', function() {
     }
 
     // name, desc, options, fn
-    c.register('test', 'this is a test', {init: true}, function() {});
+    c.register('test', 'this is a test', {init: true}, () => {});
 
     c.get('test').should.exist;
     c.get('test').desc.should.eql('this is a test');
@@ -63,10 +61,10 @@ describe('Console', function() {
     }
   });
 
-  it('register() - alias', function() {
-    var c = new Console();
+  it('register() - alias', () => {
+    const c = new Console();
 
-    c.register('test', function() {});
+    c.register('test', () => {});
 
     c.alias.should.eql({
       t: 'test',
@@ -76,33 +74,33 @@ describe('Console', function() {
     });
   });
 
-  it('register() - promisify', function() {
-    var c = new Console();
+  it('register() - promisify', () => {
+    const c = new Console();
 
-    c.register('test', function(args, callback) {
+    c.register('test', (args, callback) => {
       args.should.eql({foo: 'bar'});
       callback(null, 'foo');
     });
 
     c.get('test')({
       foo: 'bar'
-    }).then(function(result) {
+    }).then(result => {
       result.should.eql('foo');
     });
   });
 
-  it('list()', function() {
-    var c = new Console();
+  it('list()', () => {
+    const c = new Console();
 
-    c.register('test', function() {});
+    c.register('test', () => {});
 
     c.list().should.have.keys(['test']);
   });
 
-  it('get()', function() {
-    var c = new Console();
+  it('get()', () => {
+    const c = new Console();
 
-    c.register('test', function() {});
+    c.register('test', () => {});
 
     c.get('test').should.exist;
     c.get('t').should.exist;

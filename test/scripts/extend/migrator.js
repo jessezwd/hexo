@@ -1,15 +1,13 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
+describe('Migrator', () => {
+  const Migrator = require('../../../lib/extend/migrator');
 
-describe('Migrator', function() {
-  var Migrator = require('../../../lib/extend/migrator');
-
-  it('register()', function() {
-    var d = new Migrator();
+  it('register()', () => {
+    const d = new Migrator();
 
     // name, fn
-    d.register('test', function() {});
+    d.register('test', () => {});
 
     d.get('test').should.exist;
 
@@ -32,48 +30,48 @@ describe('Migrator', function() {
     }
   });
 
-  it('register() - promisify', function() {
-    var d = new Migrator();
+  it('register() - promisify', () => {
+    const d = new Migrator();
 
-    d.register('test', function(args, callback) {
+    d.register('test', (args, callback) => {
       args.should.eql({foo: 'bar'});
       callback(null, 'foo');
     });
 
     d.get('test')({
       foo: 'bar'
-    }).then(function(result) {
+    }).then(result => {
       result.should.eql('foo');
     });
   });
 
-  it('register() - Promise.method', function() {
-    var d = new Migrator();
+  it('register() - Promise.method', () => {
+    const d = new Migrator();
 
-    d.register('test', function(args) {
+    d.register('test', args => {
       args.should.eql({foo: 'bar'});
       return 'foo';
     });
 
     d.get('test')({
       foo: 'bar'
-    }).then(function(result) {
+    }).then(result => {
       result.should.eql('foo');
     });
   });
 
-  it('list()', function() {
-    var d = new Migrator();
+  it('list()', () => {
+    const d = new Migrator();
 
-    d.register('test', function() {});
+    d.register('test', () => {});
 
     d.list().should.have.keys(['test']);
   });
 
-  it('get()', function() {
-    var d = new Migrator();
+  it('get()', () => {
+    const d = new Migrator();
 
-    d.register('test', function() {});
+    d.register('test', () => {});
 
     d.get('test').should.exist;
   });

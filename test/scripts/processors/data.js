@@ -1,25 +1,24 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var Promise = require('bluebird');
-var fs = require('hexo-fs');
-var pathFn = require('path');
+const Promise = require('bluebird');
+const fs = require('hexo-fs');
+const pathFn = require('path');
 
-describe('data', function() {
-  var Hexo = require('../../../lib/hexo');
-  var baseDir = pathFn.join(__dirname, 'data_test');
-  var hexo = new Hexo(baseDir);
-  var processor = require('../../../lib/plugins/processor/data')(hexo);
-  var process = Promise.method(processor.process).bind(hexo);
-  var source = hexo.source;
-  var File = source.File;
-  var Data = hexo.model('Data');
+describe('data', () => {
+  const Hexo = require('../../../lib/hexo');
+  const baseDir = pathFn.join(__dirname, 'data_test');
+  const hexo = new Hexo(baseDir);
+  const processor = require('../../../lib/plugins/processor/data')(hexo);
+  const process = Promise.method(processor.process).bind(hexo);
+  const source = hexo.source;
+  const File = source.File;
+  const Data = hexo.model('Data');
 
   function newFile(options) {
-    var path = options.path;
+    const path = options.path;
 
     options.params = {
-      path: path
+      path
     };
 
     options.path = '_data/' + path;
@@ -28,89 +27,71 @@ describe('data', function() {
     return new File(options);
   }
 
-  before(function() {
-    return fs.mkdirs(baseDir).then(function() {
-      return hexo.init();
-    });
-  });
+  before(() => fs.mkdirs(baseDir).then(() => hexo.init()));
 
-  after(function() {
-    return fs.rmdir(baseDir);
-  });
+  after(() => fs.rmdir(baseDir));
 
-  it('pattern', function() {
-    var pattern = processor.pattern;
+  it('pattern', () => {
+    const pattern = processor.pattern;
 
     pattern.match('_data/users.json').should.be.ok;
     pattern.match('_data/users.yaml').should.be.ok;
     should.not.exist(pattern.match('users.json'));
   });
 
-  it('type: create - yaml', function() {
-    var body = 'foo: bar';
+  it('type: create - yaml', () => {
+    const body = 'foo: bar';
 
-    var file = newFile({
+    const file = newFile({
       path: 'users.yml',
       type: 'create'
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var data = Data.findById('users');
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const data = Data.findById('users');
 
       data.data.should.eql({foo: 'bar'});
 
       return data.remove();
-    }).finally(function() {
-      return fs.unlink(file.source);
-    });
+    }).finally(() => fs.unlink(file.source));
   });
 
-  it('type: create - json', function() {
-    var body = '{"foo": 1}';
+  it('type: create - json', () => {
+    const body = '{"foo": 1}';
 
-    var file = newFile({
+    const file = newFile({
       path: 'users.json',
       type: 'create'
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var data = Data.findById('users');
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const data = Data.findById('users');
 
       data.data.should.eql({foo: 1});
 
       return data.remove();
-    }).finally(function() {
-      return fs.unlink(file.source);
-    });
+    }).finally(() => fs.unlink(file.source));
   });
 
-  it('type: create - others', function() {
-    var file = newFile({
+  it('type: create - others', () => {
+    const file = newFile({
       path: 'users.txt',
       type: 'create'
     });
 
-    return fs.writeFile(file.source, 'text').then(function() {
-      return process(file);
-    }).then(function() {
-      var data = Data.findById('users');
+    return fs.writeFile(file.source, 'text').then(() => process(file)).then(() => {
+      const data = Data.findById('users');
 
       data.data.should.eql('text');
 
       return data.remove();
-    }).finally(function() {
-      return fs.unlink(file.source);
-    });
+    }).finally(() => fs.unlink(file.source));
   });
 
-  it('type: update', function() {
-    var body = 'foo: bar';
+  it('type: update', () => {
+    const body = 'foo: bar';
 
-    var file = newFile({
+    const file = newFile({
       path: 'users.yml',
       type: 'update'
     });
@@ -121,21 +102,17 @@ describe('data', function() {
         _id: 'users',
         data: {}
       })
-    ]).then(function() {
-      return process(file);
-    }).then(function() {
-      var data = Data.findById('users');
+    ]).then(() => process(file)).then(() => {
+      const data = Data.findById('users');
 
       data.data.should.eql({foo: 'bar'});
 
       return data.remove();
-    }).finally(function() {
-      return fs.unlink(file.source);
-    });
+    }).finally(() => fs.unlink(file.source));
   });
 
-  it('type: delete', function() {
-    var file = newFile({
+  it('type: delete', () => {
+    const file = newFile({
       path: 'users.yml',
       type: 'delete'
     });
@@ -143,9 +120,7 @@ describe('data', function() {
     return Data.insert({
       _id: 'users',
       data: {foo: 'bar'}
-    }).then(function() {
-      return process(file);
-    }).then(function() {
+    }).then(() => process(file)).then(() => {
       should.not.exist(Data.findById('users'));
     });
   });

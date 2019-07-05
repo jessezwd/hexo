@@ -1,66 +1,57 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var pathFn = require('path');
-var fs = require('hexo-fs');
-var Promise = require('bluebird');
+const pathFn = require('path');
+const fs = require('hexo-fs');
+const Promise = require('bluebird');
 
-describe('view', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(pathFn.join(__dirname, 'view_test'), {silent: true});
-  var processor = require('../../../lib/theme/processors/view');
-  var process = Promise.method(processor.process.bind(hexo));
-  var themeDir = pathFn.join(hexo.base_dir, 'themes', 'test');
+describe('view', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(pathFn.join(__dirname, 'view_test'), {silent: true});
+  const processor = require('../../../lib/theme/processors/view');
+  const process = Promise.method(processor.process.bind(hexo));
+  const themeDir = pathFn.join(hexo.base_dir, 'themes', 'test');
 
   hexo.env.init = true;
 
   function newFile(options) {
-    var path = options.path;
+    const path = options.path;
 
-    options.params = {path: path};
+    options.params = {path};
     options.path = 'layout/' + path;
     options.source = pathFn.join(themeDir, options.path);
 
     return new hexo.theme.File(options);
   }
 
-  before(function() {
-    return Promise.all([
-      fs.mkdirs(themeDir),
-      fs.writeFile(hexo.config_path, 'theme: test')
-    ]).then(function() {
-      return hexo.init();
-    });
-  });
+  before(() => Promise.all([
+    fs.mkdirs(themeDir),
+    fs.writeFile(hexo.config_path, 'theme: test')
+  ]).then(() => hexo.init()));
 
-  after(function() {
-    return fs.rmdir(hexo.base_dir);
-  });
+  after(() => fs.rmdir(hexo.base_dir));
 
-  it('pattern', function() {
-    var pattern = processor.pattern;
+  it('pattern', () => {
+    const pattern = processor.pattern;
 
     pattern.match('layout/index.swig').path.should.eql('index.swig');
     should.not.exist(pattern.match('index.swig'));
     should.not.exist(pattern.match('view/index.swig'));
   });
 
-  it('type: create', function() {
-    var body = [
+  it('type: create', () => {
+    const body = [
       'foo: bar',
       '---',
       'test'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'index.swig',
       type: 'create'
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var view = hexo.theme.getView('index.swig');
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const view = hexo.theme.getView('index.swig');
 
       view.path.should.eql('index.swig');
       view.source.should.eql(pathFn.join(themeDir, 'layout', 'index.swig'));
@@ -68,19 +59,19 @@ describe('view', function() {
         foo: 'bar',
         _content: 'test'
       });
-    }).finally(function() {
+    }).finally(() => {
       hexo.theme.removeView('index.swig');
       return fs.unlink(file.source);
     });
   });
 
-  it('type: delete', function() {
-    var file = newFile({
+  it('type: delete', () => {
+    const file = newFile({
       path: 'index.swig',
       type: 'delete'
     });
 
-    return process(file).then(function() {
+    return process(file).then(() => {
       should.not.exist(hexo.theme.getView('index.swig'));
     });
   });

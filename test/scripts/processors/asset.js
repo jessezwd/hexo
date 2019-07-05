@@ -1,23 +1,22 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var pathFn = require('path');
-var fs = require('hexo-fs');
-var Promise = require('bluebird');
+const pathFn = require('path');
+const fs = require('hexo-fs');
+const Promise = require('bluebird');
 
-var dateFormat = 'YYYY-MM-DD HH:mm:ss';
+const dateFormat = 'YYYY-MM-DD HH:mm:ss';
 
-describe('asset', function() {
-  var Hexo = require('../../../lib/hexo');
-  var baseDir = pathFn.join(__dirname, 'asset_test');
-  var hexo = new Hexo(baseDir);
-  var asset = require('../../../lib/plugins/processor/asset')(hexo);
-  var process = asset.process.bind(hexo);
-  var pattern = asset.pattern;
-  var source = hexo.source;
-  var File = source.File;
-  var Asset = hexo.model('Asset');
-  var Page = hexo.model('Page');
+describe('asset', () => {
+  const Hexo = require('../../../lib/hexo');
+  const baseDir = pathFn.join(__dirname, 'asset_test');
+  const hexo = new Hexo(baseDir);
+  const asset = require('../../../lib/plugins/processor/asset')(hexo);
+  const process = asset.process.bind(hexo);
+  const pattern = asset.pattern;
+  const source = hexo.source;
+  const File = source.File;
+  const Asset = hexo.model('Asset');
+  const Page = hexo.model('Page');
 
   function newFile(options) {
     options.source = pathFn.join(source.base, options.path);
@@ -28,17 +27,11 @@ describe('asset', function() {
     return new File(options);
   }
 
-  before(function() {
-    return fs.mkdirs(baseDir).then(function() {
-      return hexo.init();
-    });
-  });
+  before(() => fs.mkdirs(baseDir).then(() => hexo.init()));
 
-  after(function() {
-    return fs.rmdir(baseDir);
-  });
+  after(() => fs.rmdir(baseDir));
 
-  it('pattern', function() {
+  it('pattern', () => {
     // Renderable files
     pattern.match('foo.json').should.have.property('renderable', true);
 
@@ -71,18 +64,16 @@ describe('asset', function() {
     hexo.config.skip_render = [];
   });
 
-  it('asset - type: create', function() {
-    var file = newFile({
+  it('asset - type: create', () => {
+    const file = newFile({
       path: 'foo.jpg',
       type: 'create',
       renderable: false
     });
 
-    return fs.writeFile(file.source, 'foo').then(function() {
-      return process(file);
-    }).then(function() {
-      var id = 'source/' + file.path;
-      var asset = Asset.findById(id);
+    return fs.writeFile(file.source, 'foo').then(() => process(file)).then(() => {
+      const id = 'source/' + file.path;
+      const asset = Asset.findById(id);
 
       asset._id.should.eql(id);
       asset.path.should.eql(file.path);
@@ -90,19 +81,38 @@ describe('asset', function() {
       asset.renderable.should.be.false;
 
       return asset.remove();
-    }).finally(function() {
-      return fs.unlink(file.source);
+    }).finally(() => fs.unlink(file.source));
+  });
+  it('asset - type: create (when source path is configed to parent directory)', () => {
+    const file = newFile({
+      path: '../../source/foo.jpg',
+      type: 'create',
+      renderable: false
+    });
+
+    return fs.writeFile(file.source, 'foo').then(() => process(file)).then(() => {
+      const id = '../source/foo.jpg'; // The id should a relative path,because the 'lib/models/assets.js' use asset path by joining base path with "_id" directly.
+      const asset = Asset.findById(id);
+
+      asset._id.should.eql(id);
+      asset.path.should.eql(file.path);
+      asset.modified.should.be.true;
+      asset.renderable.should.be.false;
+
+      return asset.remove();
+    }).finally(() => {
+      fs.unlink(file.source);
+      fs.rmdir(pathFn.dirname(file.source));
     });
   });
-
-  it('asset - type: update', function() {
-    var file = newFile({
+  it('asset - type: update', () => {
+    const file = newFile({
       path: 'foo.jpg',
       type: 'update',
       renderable: false
     });
 
-    var id = 'source/' + file.path;
+    const id = 'source/' + file.path;
 
     return Promise.all([
       fs.writeFile(file.source, 'test'),
@@ -111,10 +121,8 @@ describe('asset', function() {
         path: file.path,
         modified: false
       })
-    ]).then(function() {
-      return process(file);
-    }).then(function() {
-      var asset = Asset.findById(id);
+    ]).then(() => process(file)).then(() => {
+      const asset = Asset.findById(id);
 
       asset._id.should.eql(id);
       asset.path.should.eql(file.path);
@@ -122,19 +130,17 @@ describe('asset', function() {
       asset.renderable.should.be.false;
 
       return asset.remove();
-    }).finally(function() {
-      return fs.unlink(file.source);
-    });
+    }).finally(() => fs.unlink(file.source));
   });
 
-  it('asset - type: skip', function() {
-    var file = newFile({
+  it('asset - type: skip', () => {
+    const file = newFile({
       path: 'foo.jpg',
       type: 'skip',
       renderable: false
     });
 
-    var id = 'source/' + file.path;
+    const id = 'source/' + file.path;
 
     return Promise.all([
       fs.writeFile(file.source, 'test'),
@@ -143,40 +149,34 @@ describe('asset', function() {
         path: file.path,
         modified: false
       })
-    ]).then(function() {
-      return process(file);
-    }).then(function() {
-      var asset = Asset.findById(id);
+    ]).then(() => process(file)).then(() => {
+      const asset = Asset.findById(id);
       asset.modified.should.be.false;
-    }).finally(function() {
-      return Promise.all([
-        Asset.removeById(id),
-        fs.unlink(file.source)
-      ]);
-    });
+    }).finally(() => Promise.all([
+      Asset.removeById(id),
+      fs.unlink(file.source)
+    ]));
   });
 
-  it('asset - type: delete', function() {
-    var file = newFile({
+  it('asset - type: delete', () => {
+    const file = newFile({
       path: 'foo.jpg',
       type: 'delete',
       renderable: false
     });
 
-    var id = 'source/' + file.path;
+    const id = 'source/' + file.path;
 
     return Asset.insert({
       _id: id,
       path: file.path
-    }).then(function() {
-      return process(file);
-    }).then(function() {
+    }).then(() => process(file)).then(() => {
       should.not.exist(Asset.findById(id));
     });
   });
 
-  it('page - type: create', function() {
-    var body = [
+  it('page - type: create', () => {
+    const body = [
       'title: "Hello world"',
       'date: 2006-01-02 15:04:05',
       'updated: 2014-12-13 01:02:03',
@@ -184,16 +184,14 @@ describe('asset', function() {
       'The quick brown fox jumps over the lazy dog'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'hello.swig',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.title.should.eql('Hello world');
       page.date.format(dateFormat).should.eql('2006-01-02 15:04:05');
@@ -211,28 +209,28 @@ describe('asset', function() {
     });
   });
 
-  it('page - type: update', function() {
-    var body = [
+  it('page - type: update', () => {
+    const body = [
       'title: "Hello world"',
       '---'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'hello.swig',
       type: 'update',
       renderable: true
     });
 
-    var id;
+    let id;
 
     return Promise.all([
       Page.insert({source: file.path, path: 'hello.html'}),
       fs.writeFile(file.source, body)
-    ]).spread(function(doc) {
+    ]).spread(doc => {
       id = doc._id;
       return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    }).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page._id.should.eql(id);
       page.title.should.eql('Hello world');
@@ -244,8 +242,8 @@ describe('asset', function() {
     });
   });
 
-  it('page - type: delete', function() {
-    var file = newFile({
+  it('page - type: delete', () => {
+    const file = newFile({
       path: 'hello.swig',
       type: 'delete',
       renderable: true
@@ -254,27 +252,23 @@ describe('asset', function() {
     return Page.insert({
       source: file.path,
       path: 'hello.html'
-    }).then(function() {
-      return process(file);
-    }).then(function() {
+    }).then(() => process(file)).then(() => {
       should.not.exist(Page.findOne({source: file.path}));
     });
   });
 
-  it('page - use the status of the source file if date not set', function() {
-    var file = newFile({
+  it('page - use the status of the source file if date not set', () => {
+    const file = newFile({
       path: 'hello.swig',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, '').then(function() {
-      return Promise.all([
-        fs.stat(file.source),
-        process(file)
-      ]);
-    }).spread(function(stats) {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, '').then(() => Promise.all([
+      fs.stat(file.source),
+      process(file)
+    ])).spread(stats => {
+      const page = Page.findOne({source: file.path});
 
       page.date.toDate().should.eql(stats.ctime);
       page.updated.toDate().should.eql(stats.mtime);
@@ -286,23 +280,21 @@ describe('asset', function() {
     });
   });
 
-  it('page - permalink', function() {
-    var body = [
+  it('page - permalink', () => {
+    const body = [
       'title: "Hello world"',
       'permalink: foo.html',
       '---'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'hello.swig',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.path.should.eql('foo.html');
 
@@ -313,23 +305,21 @@ describe('asset', function() {
     });
   });
 
-  it('page - permalink (without extension name)', function() {
-    var body = [
+  it('page - permalink (without extension name)', () => {
+    const body = [
       'title: "Hello world"',
       'permalink: foo',
       '---'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'hello.swig',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.path.should.eql('foo.html');
 
@@ -340,23 +330,21 @@ describe('asset', function() {
     });
   });
 
-  it('page - permalink (with trailing slash)', function() {
-    var body = [
+  it('page - permalink (with trailing slash)', () => {
+    const body = [
       'title: "Hello world"',
       'permalink: foo/',
       '---'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'hello.swig',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.path.should.eql('foo/index.html');
 
@@ -367,19 +355,17 @@ describe('asset', function() {
     });
   });
 
-  it('page - set layout to false if output is not html', function() {
-    var body = 'foo: 1';
+  it('page - set layout to false if output is not html', () => {
+    const body = 'foo: 1';
 
-    var file = newFile({
+    const file = newFile({
       path: 'test.yml',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.layout.should.eql('false');
 
@@ -390,23 +376,21 @@ describe('asset', function() {
     });
   });
 
-  it('page - don\'t set layout to false if layout is set but output is not html', function() {
-    var body = [
+  it('page - don\'t set layout to false if layout is set but output is not html', () => {
+    const body = [
       'layout: something',
       '---',
       'foo: 1'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'test.yml',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.layout.should.eql('something');
 
@@ -417,24 +401,22 @@ describe('asset', function() {
     });
   });
 
-  it('page - parse date', function() {
-    var body = [
+  it('page - parse date', () => {
+    const body = [
       'title: "Hello world"',
       'date: Apr 24 2014',
       'updated: May 5 2015',
       '---'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'hello.swig',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.date.format(dateFormat).should.eql('2014-04-24 00:00:00');
       page.updated.format(dateFormat).should.eql('2015-05-05 00:00:00');
@@ -446,27 +428,25 @@ describe('asset', function() {
     });
   });
 
-  it('page - use file stats instead if date is invalid', function() {
-    var body = [
+  it('page - use file stats instead if date is invalid', () => {
+    const body = [
       'title: "Hello world"',
       'date: yomama',
       'updated: isfat',
       '---'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'hello.swig',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return Promise.all([
-        file.stat(),
-        process(file)
-      ]);
-    }).spread(function(stats) {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => Promise.all([
+      file.stat(),
+      process(file)
+    ])).spread(stats => {
+      const page = Page.findOne({source: file.path});
 
       page.date.toDate().should.eql(stats.ctime);
       page.updated.toDate().should.eql(stats.mtime);
@@ -478,19 +458,17 @@ describe('asset', function() {
     });
   });
 
-  it('page - don\'t remove extension name', function() {
-    var body = '';
+  it('page - don\'t remove extension name', () => {
+    const body = '';
 
-    var file = newFile({
+    const file = newFile({
       path: 'test.min.js',
       type: 'create',
       renderable: true
     });
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.path.should.eql('test.min.js');
 
@@ -501,15 +479,15 @@ describe('asset', function() {
     });
   });
 
-  it('page - timezone', function() {
-    var body = [
+  it('page - timezone', () => {
+    const body = [
       'title: "Hello world"',
       'date: Apr 24 2014',
       'updated: May 5 2015',
       '---'
     ].join('\n');
 
-    var file = newFile({
+    const file = newFile({
       path: 'hello.swig',
       type: 'create',
       renderable: true
@@ -517,10 +495,8 @@ describe('asset', function() {
 
     hexo.config.timezone = 'UTC';
 
-    return fs.writeFile(file.source, body).then(function() {
-      return process(file);
-    }).then(function() {
-      var page = Page.findOne({source: file.path});
+    return fs.writeFile(file.source, body).then(() => process(file)).then(() => {
+      const page = Page.findOne({source: file.path});
 
       page.date.utc().format(dateFormat).should.eql('2014-04-24 00:00:00');
       page.updated.utc().format(dateFormat).should.eql('2015-05-05 00:00:00');
@@ -529,7 +505,7 @@ describe('asset', function() {
         page.remove(),
         fs.unlink(file.source)
       ]);
-    }).finally(function() {
+    }).finally(() => {
       hexo.config.timezone = '';
     });
   });

@@ -1,16 +1,15 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var util = require('hexo-util');
-var cheerio = require('cheerio');
+const util = require('hexo-util');
+const cheerio = require('cheerio');
 
-describe('code', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo();
-  var codeTag = require('../../../lib/plugins/tag/code')(hexo);
-  var escapeHTML = util.escapeHTML;
+describe('code', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo();
+  const codeTag = require('../../../lib/plugins/tag/code')(hexo);
+  const escapeHTML = util.escapeHTML;
 
-  var fixture = [
+  const fixture = [
     'if (tired && night){',
     '  sleep();',
     '}'
@@ -26,33 +25,33 @@ describe('code', function() {
       .replace(/}/g, '&#125;');
   }
 
-  it('default', function() {
-    var result = code('', fixture);
+  it('default', () => {
+    const result = code('', fixture);
     result.should.eql(highlight(fixture));
   });
 
-  it('non standard indent', function() {
-    var nonStandardIndent = [
-        '  ',
-        '  return x;',
-        '}',
-        '',
-        fixture,
-        '  '
+  it('non standard indent', () => {
+    const nonStandardIndent = [
+      '  ',
+      '  return x;',
+      '}',
+      '',
+      fixture,
+      '  '
     ].join('/n');
-    var result = code('', nonStandardIndent);
+    const result = code('', nonStandardIndent);
     result.should.eql(highlight(nonStandardIndent));
   });
 
-  it('lang', function() {
-    var result = code('lang:js', fixture);
+  it('lang', () => {
+    const result = code('lang:js', fixture);
     result.should.eql(highlight(fixture, {
       lang: 'js'
     }));
   });
 
-  it('line_number', function() {
-    var result = code('line_number:false', fixture);
+  it('line_number', () => {
+    let result = code('line_number:false', fixture);
     result.should.eql(highlight(fixture, {
       gutter: false
     }));
@@ -62,47 +61,47 @@ describe('code', function() {
     }));
   });
 
-  it('highlight disable', function() {
-    var result = code('highlight:false', fixture);
+  it('highlight disable', () => {
+    const result = code('highlight:false', fixture);
     result.should.eql('<pre><code>' + escapeHTML(fixture) + '</code></pre>');
   });
 
-  it('title', function() {
-    var result = code('Hello world', fixture);
+  it('title', () => {
+    const result = code('Hello world', fixture);
     result.should.eql(highlight(fixture, {
       caption: '<span>Hello world</span>'
     }));
   });
 
-  it('link', function() {
-    var result = code('Hello world http://hexo.io/', fixture);
-    var expected = highlight(fixture, {
-      caption: '<span>Hello world</span><a href="http://hexo.io/">link</a>'
+  it('link', () => {
+    const result = code('Hello world https://hexo.io/', fixture);
+    const expected = highlight(fixture, {
+      caption: '<span>Hello world</span><a href="https://hexo.io/">link</a>'
     });
 
     result.should.eql(expected);
   });
 
-  it('link text', function() {
-    var result = code('Hello world http://hexo.io/ Hexo', fixture);
-    var expected = highlight(fixture, {
-      caption: '<span>Hello world</span><a href="http://hexo.io/">Hexo</a>'
+  it('link text', () => {
+    const result = code('Hello world https://hexo.io/ Hexo', fixture);
+    const expected = highlight(fixture, {
+      caption: '<span>Hello world</span><a href="https://hexo.io/">Hexo</a>'
     });
 
     result.should.eql(expected);
   });
 
-  it('disabled', function() {
+  it('disabled', () => {
     hexo.config.highlight.enable = false;
 
-    var result = code('', fixture);
+    const result = code('', fixture);
     result.should.eql('<pre><code>' + escapeHTML(fixture) + '</code></pre>');
 
     hexo.config.highlight.enable = true;
   });
 
-  it('first_line', function() {
-    var result = code('first_line:1234', fixture);
+  it('first_line', () => {
+    let result = code('first_line:1234', fixture);
     result.should.eql(highlight(fixture, {
       firstLine: 1234
     }));
@@ -112,8 +111,8 @@ describe('code', function() {
     }));
   });
 
-  it('mark', function() {
-    var source = [
+  it('mark', () => {
+    const source = [
       'const http = require(\'http\');',
       '',
       'const hostname = \'127.0.0.1\';',
@@ -126,15 +125,15 @@ describe('code', function() {
       '  console.log(`Server running at http://${hostname}:${port}/`);',
       '});'
     ].join('\n');
-    var result = code('mark:1,7-8,10', source);
+    const result = code('mark:1,7-8,10', source);
     result.should.eql(highlight(source, {
       mark: [1, 7, 8, 10]
     }));
   });
 
-  it('# lines', function() {
-    var result = code('', fixture);
-    var $ = cheerio.load(result);
+  it('# lines', () => {
+    const result = code('', fixture);
+    const $ = cheerio.load(result);
     $('.gutter .line').length.should.eql(3);
   });
 });

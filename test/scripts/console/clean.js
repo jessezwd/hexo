@@ -1,33 +1,40 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var fs = require('hexo-fs');
+const fs = require('hexo-fs');
 
-describe('clean', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(__dirname, {silent: true});
-  var clean = require('../../../lib/plugins/console/clean').bind(hexo);
+describe('clean', () => {
+  const Hexo = require('../../../lib/hexo');
+  let hexo, clean;
 
-  it('delete database', function() {
-    var dbPath = hexo.database.options.path;
+  beforeEach(() => {
+    hexo = new Hexo(__dirname, {silent: true});
+    clean = require('../../../lib/plugins/console/clean').bind(hexo);
+  });
 
-    return fs.writeFile(dbPath, '').then(function() {
-      return clean();
-    }).then(function() {
-      return fs.exists(dbPath);
-    }).then(function(exist) {
+  it('delete database', () => {
+    const dbPath = hexo.database.options.path;
+
+    return fs.writeFile(dbPath, '').then(() => clean()).then(() => fs.exists(dbPath)).then(exist => {
       exist.should.be.false;
     });
   });
 
-  it('delete public folder', function() {
-    var publicDir = hexo.public_dir;
+  it('delete public folder', () => {
+    const publicDir = hexo.public_dir;
 
-    return fs.mkdirs(publicDir).then(function() {
-      return clean();
-    }).then(function() {
-      return fs.exists(publicDir);
-    }).then(function(exist) {
+    return fs.mkdirs(publicDir).then(() => clean()).then(() => fs.exists(publicDir)).then(exist => {
+      exist.should.be.false;
+    });
+  });
+
+  it('execute corresponding filter', () => {
+    const extraDbPath = hexo.database.options.path + '.tmp';
+
+    hexo.extend.filter.register('after_clean', () => {
+      return fs.unlink(extraDbPath);
+    });
+
+    return fs.writeFile(extraDbPath, '').then(() => clean()).then(() => fs.exists(extraDbPath)).then(exist => {
       exist.should.be.false;
     });
   });

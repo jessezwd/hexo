@@ -1,11 +1,9 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
+describe('plain', () => {
+  const r = require('../../../lib/plugins/renderer/plain');
 
-describe('plain', function() {
-  var r = require('../../../lib/plugins/renderer/plain');
-
-  it('normal', function() {
+  it('normal', () => {
     r({text: '123'}).should.eql('123');
   });
 });

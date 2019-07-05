@@ -1,16 +1,15 @@
 'use strict';
 
-var should = require('chai').should(); // eslint-disable-line
-var pathFn = require('path');
-var fs = require('hexo-fs');
+const pathFn = require('path');
+const fs = require('hexo-fs');
 
-describe('Load database', function() {
-  var Hexo = require('../../../lib/hexo');
-  var hexo = new Hexo(pathFn.join(__dirname, 'db_test'), {silent: true});
-  var loadDatabase = require('../../../lib/hexo/load_database');
-  var dbPath = hexo.database.options.path;
+describe('Load database', () => {
+  const Hexo = require('../../../lib/hexo');
+  const hexo = new Hexo(pathFn.join(__dirname, 'db_test'), {silent: true});
+  const loadDatabase = require('../../../lib/hexo/load_database');
+  const dbPath = hexo.database.options.path;
 
-  var fixture = {
+  const fixture = {
     meta: {
       version: 1,
       warehouse: require('warehouse').version
@@ -24,40 +23,28 @@ describe('Load database', function() {
     }
   };
 
-  before(function() {
-    return fs.mkdirs(hexo.base_dir);
-  });
+  before(() => fs.mkdirs(hexo.base_dir));
 
-  beforeEach(function() {
+  beforeEach(() => {
     hexo._dbLoaded = false;
   });
 
-  after(function() {
-    return fs.rmdir(hexo.base_dir);
-  });
+  after(() => fs.rmdir(hexo.base_dir));
 
-  it('database does not exist', function() {
-    return loadDatabase(hexo);
-  });
+  it('database does not exist', () => loadDatabase(hexo));
 
-  it('database load success', function() {
-    return fs.writeFile(dbPath, JSON.stringify(fixture)).then(function() {
-      return loadDatabase(hexo);
-    }).then(function() {
-      hexo._dbLoaded.should.be.true;
-      hexo.model('Test').toArray({lean: true}).should.eql(fixture.models.Test);
-      hexo.model('Test').destroy();
+  it('database load success', () => fs.writeFile(dbPath, JSON.stringify(fixture)).then(() => loadDatabase(hexo)).then(() => {
+    hexo._dbLoaded.should.be.true;
+    hexo.model('Test').toArray({lean: true}).should.eql(fixture.models.Test);
+    hexo.model('Test').destroy();
 
-      return fs.unlink(dbPath);
-    });
-  });
+    return fs.unlink(dbPath);
+  }));
 
-  it('don\'t load database if loaded', function() {
+  it('don\'t load database if loaded', () => {
     hexo._dbLoaded = true;
 
-    return fs.writeFile(dbPath, JSON.stringify(fixture)).then(function() {
-      return loadDatabase(hexo);
-    }).then(function() {
+    return fs.writeFile(dbPath, JSON.stringify(fixture)).then(() => loadDatabase(hexo)).then(() => {
       hexo.model('Test').length.should.eql(0);
       return fs.unlink(dbPath);
     });
@@ -65,14 +52,10 @@ describe('Load database', function() {
 
   // I don't know why this test case can't pass on Windows
   // It always throws EPERM error
-  it.skip('database load failed', function() {
-    return fs.writeFile(dbPath, '{1423432: 324').then(function() {
-      return loadDatabase(hexo);
-    }).then(function() {
-      hexo._dbLoaded.should.be.false;
-      return fs.exists(dbPath);
-    }).then(function(exist) {
-      exist.should.be.false;
-    });
-  });
+  it.skip('database load failed', () => fs.writeFile(dbPath, '{1423432: 324').then(() => loadDatabase(hexo)).then(() => {
+    hexo._dbLoaded.should.be.false;
+    return fs.exists(dbPath);
+  }).then(exist => {
+    exist.should.be.false;
+  }));
 });
